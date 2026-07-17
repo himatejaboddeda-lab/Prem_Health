@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#2f6f5e" />
+  <title>Food & Symptom Tracker</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --card: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --accent: #2f6f5e;
+      --accent-light: #e8f3ef;
+      --danger: #b42318;
+      --danger-light: #feeceb;
+      --warning: #b54708;
+      --warning-light: #fff3e8;
+      --good: #197044;
+      --good-light: #e9f7ef;
+      --border: #d9e1de;
+      --shadow: 0 8px 24px rgba(22, 53, 45, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: linear-gradient(135deg, #24594c, #3b806d);
+      color: white;
+      padding: 22px 18px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 3px 12px rgba(0,0,0,.12);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.35rem;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: .9rem;
+      opacity: .9;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 16px;
+    }
+
+    .tab-btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 6px;
+      font-weight: 700;
+      font-size: .78rem;
+      background: rgba(255,255,255,.18);
+      color: white;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: white;
+      color: var(--accent);
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    h2, h3 { margin-top: 0; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 700px) {
+      .grid.two { grid-template-columns: 1fr 1fr; }
+      .grid.three { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    label {
+      display: block;
+      font-size: .88rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea, button {
+      font: inherit;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 12px;
+      background: white;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(47,111,94,.12);
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .inline-checks {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .check-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fbfcfc;
+    }
+
+    .check-card label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .check-card input {
+      width: auto;
+      transform: scale(1.2);
+    }
+
+    .primary {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 13px;
+      font-weight: 800;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+    }
+
+    .secondary, .danger-btn {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 12px;
+      background: white;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .danger-btn {
+      color: var(--danger);
+      border-color: #f1b4ae;
+    }
+
+    .entry {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 13px;
+      margin-bottom: 10px;
+      background: white;
+    }
+
+    .entry-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .entry h3 {
+      margin: 0 0 4px;
+      font-size: 1rem;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: .82rem;
+      margin-bottom: 8px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .badge {
+      font-size: .75rem;
+      font-weight: 800;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #eef2f1;
+      color: #344054;
+    }
+
+    .badge.bad { background: var(--danger-light); color: var(--danger); }
+    .badge.warn { background: var(--warning-light); color: var(--warning); }
+    .badge.good { background: var(--good-light); color: var(--good); }
+
+    .summary-card {
+      border-left: 6px solid var(--accent);
+    }
+
+    .summary-card.bad { border-left-color: var(--danger); }
+    .summary-card.warn { border-left-color: var(--warning); }
+    .summary-card.good { border-left-color: var(--good); }
+
+    .food-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid #edf0ef;
+    }
+
+    .food-row:last-child { border-bottom: 0; }
+
+    .food-name {
+      font-weight: 800;
+    }
+
+    .food-stats {
+      text-align: right;
+      font-size: .82rem;
+      color: var(--muted);
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 24px 10px;
+    }
+
+    .notice {
+      font-size: .82rem;
+      color: #5b6570;
+      background: #eef4f2;
+      border-radius: 12px;
+      padding: 12px;
+      line-height: 1.45;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .small {
+      font-size: .78rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Food & Symptom Tracker</h1>
+  <p>Track meals, pain, bowel movements, and possible food triggers.</p>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="add">Add Entry</button>
+    <button class="tab-btn" data-tab="history">History</button>
+    <button class="tab-btn" data-tab="harmful">Harmful Foods</button>
+    <button class="tab-btn" data-tab="good">Good Foods</button>
+  </div>
+</header>
+
+<main>
+  <section id="add" class="tab-panel active">
+    <div class="card">
+      <h2>Add meal details</h2>
+      <form id="entryForm">
+        <div class="grid two">
+          <div>
+            <label for="date">Date</label>
+            <input type="date" id="date" required />
+          </div>
+          <div>
+            <label for="time">Time</label>
+            <input type="time" id="time" required />
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="grid two">
+          <div>
+            <label for="mealType">Meal type</label>
+            <select id="mealType" required>
+              <option value="">Select</option>
+              <option>Breakfast</option>
+              <option>Lunch</option>
+              <option>Dinner</option>
+              <option>Snack</option>
+              <option>Drink</option>
+            </select>
+          </div>
+          <div>
+            <label for="food">Food eaten</label>
+            <input id="food" placeholder="Example: rice, banana, curd" required />
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="grid two">
+          <div>
+            <label for="portion">Approximate portion</label>
+            <input id="portion" placeholder="Example: 1 cup, 2 pieces" />
+          </div>
+          <div>
+            <label for="painLevel">Stomach pain level (0–10)</label>
+            <input type="number" id="painLevel" min="0" max="10" value="0" required />
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="inline-checks">
+          <div class="check-card">
+            <label><input type="checkbox" id="painAfter" /> Pain after eating</label>
+          </div>
+          <div class="check-card">
+            <label><input type="checkbox" id="motionAfter" /> Motion after food</label>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="grid two">
+          <div>
+            <label for="motionCount">Number of motions within 6 hours</label>
+            <input type="number" id="motionCount" min="0" max="20" value="0" />
+          </div>
+          <div>
+            <label for="stoolType">Stool type</label>
+            <select id="stoolType">
+              <option value="">Not recorded</option>
+              <option>Normal</option>
+              <option>Loose</option>
+              <option>Watery</option>
+              <option>Constipated</option>
+              <option>Blood present</option>
+              <option>Mucus present</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div>
+          <label for="notes">Notes</label>
+          <textarea id="notes" placeholder="Pain timing, bloating, vomiting, medicines taken, stress, or anything unusual"></textarea>
+        </div>
+
+        <div style="height:14px"></div>
+        <button class="primary" type="submit">Save Entry</button>
+      </form>
+    </div>
+
+    <div class="notice">
+      This tracker can help identify patterns, but it cannot prove that one food caused a symptom. Crohn's symptoms can also be affected by medicines, infections, stress, portion size, and active inflammation. Share the saved history with his gastroenterologist.
+    </div>
+  </section>
+
+  <section id="history" class="tab-panel">
+    <div class="card">
+      <div class="entry-top">
+        <h2>Meal history</h2>
+        <div class="actions">
+          <button class="secondary" id="exportBtn">Export CSV</button>
+          <button class="danger-btn" id="clearBtn">Clear All</button>
+        </div>
+      </div>
+      <div id="historyList"></div>
+    </div>
+  </section>
+
+  <section id="harmful" class="tab-panel">
+    <div class="card summary-card bad">
+      <h2>Foods linked with symptoms</h2>
+      <p class="small">Foods are ranked using pain, motion count, and repeated symptom entries.</p>
+      <div id="harmfulList"></div>
+    </div>
+  </section>
+
+  <section id="good" class="tab-panel">
+    <div class="card summary-card good">
+      <h2>Foods tolerated well</h2>
+      <p class="small">These are foods recorded without pain and without motion soon after eating.</p>
+      <div id="goodList"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const STORAGE_KEY = "foodSymptomTrackerEntries_v1";
+  let entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+
+  const $ = id => document.getElementById(id);
+
+  function setDefaultDateTime() {
+    const now = new Date();
+    $("date").value = now.toISOString().slice(0,10);
+    $("time").value = now.toTimeString().slice(0,5);
+  }
+
+  function saveEntries() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  }
+
+  function normalizeFoods(text) {
+    return text
+      .split(/,|\/|\+| and /i)
+      .map(x => x.trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  function symptomScore(entry) {
+    let score = 0;
+    if (entry.painAfter) score += 3;
+    score += Math.min(Number(entry.painLevel || 0), 10) * 0.6;
+    if (entry.motionAfter) score += 3;
+    score += Math.min(Number(entry.motionCount || 0), 10) * 0.8;
+    if (entry.stoolType === "Watery") score += 2;
+    if (entry.stoolType === "Blood present") score += 4;
+    if (entry.stoolType === "Mucus present") score += 2;
+    return score;
+  }
+
+  function foodStats() {
+    const map = {};
+
+    entries.forEach(entry => {
+      const foods = normalizeFoods(entry.food);
+      foods.forEach(food => {
+        if (!map[food]) {
+          map[food] = {
+            food,
+            total: 0,
+            symptomEntries: 0,
+            safeEntries: 0,
+            totalScore: 0,
+            painCount: 0,
+            motionCount: 0
+          };
+        }
+        const item = map[food];
+        const score = symptomScore(entry);
+        item.total++;
+        item.totalScore += score;
+        if (entry.painAfter || Number(entry.painLevel) > 0) item.painCount++;
+        if (entry.motionAfter || Number(entry.motionCount) > 0) item.motionCount++;
+        if (score > 0) item.symptomEntries++;
+        else item.safeEntries++;
+      });
+    });
+
+    return Object.values(map).map(item => ({
+      ...item,
+      averageScore: item.total ? item.totalScore / item.total : 0,
+      symptomRate: item.total ? item.symptomEntries / item.total : 0
+    }));
+  }
+
+  function renderHistory() {
+    const container = $("historyList");
+    if (!entries.length) {
+      container.innerHTML = '<div class="empty">No entries saved yet.</div>';
+      return;
+    }
+
+    const sorted = [...entries].sort((a,b) => {
+      return new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`);
+    });
+
+    container.innerHTML = sorted.map(entry => {
+      const badges = [];
+      if (entry.painAfter || Number(entry.painLevel) > 0)
+        badges.push(`<span class="badge bad">Pain ${entry.painLevel}/10</span>`);
+      else
+        badges.push(`<span class="badge good">No pain</span>`);
+
+      if (entry.motionAfter || Number(entry.motionCount) > 0)
+        badges.push(`<span class="badge warn">${entry.motionCount} motion(s)</span>`);
+      else
+        badges.push(`<span class="badge good">No motion after food</span>`);
+
+      if (entry.stoolType)
+        badges.push(`<span class="badge">${escapeHtml(entry.stoolType)}</span>`);
+
+      return `
+        <div class="entry">
+          <div class="entry-top">
+            <div>
+              <h3>${escapeHtml(entry.food)}</h3>
+              <div class="meta">${escapeHtml(entry.date)} • ${escapeHtml(entry.time)} • ${escapeHtml(entry.mealType)}</div>
+            </div>
+            <button class="danger-btn" onclick="deleteEntry('${entry.id}')">Delete</button>
+          </div>
+          ${entry.portion ? `<div><strong>Portion:</strong> ${escapeHtml(entry.portion)}</div>` : ""}
+          <div class="badges">${badges.join("")}</div>
+          ${entry.notes ? `<p class="small"><strong>Notes:</strong> ${escapeHtml(entry.notes)}</p>` : ""}
+        </div>`;
+    }).join("");
+  }
+
+  function renderFoodLists() {
+    const stats = foodStats();
+
+    const harmful = stats
+      .filter(x => x.symptomEntries > 0)
+      .sort((a,b) => (b.averageScore - a.averageScore) || (b.symptomRate - a.symptomRate));
+
+    $("harmfulList").innerHTML = harmful.length ? harmful.map(x => {
+      let level = "Possible trigger";
+      let cls = "warn";
+      if (x.averageScore >= 7 || x.symptomRate >= 0.75) {
+        level = "Strong trigger pattern";
+        cls = "bad";
+      } else if (x.averageScore < 3 && x.symptomRate < 0.5) {
+        level = "Mild pattern";
+      }
+
+      return `
+        <div class="food-row">
+          <div>
+            <div class="food-name">${titleCase(x.food)}</div>
+            <span class="badge ${cls}">${level}</span>
+          </div>
+          <div class="food-stats">
+            ${x.symptomEntries}/${x.total} entries with symptoms<br>
+            Pain: ${x.painCount} • Motion: ${x.motionCount}
+          </div>
+        </div>`;
+    }).join("") : '<div class="empty">No harmful-food pattern identified yet.</div>';
+
+    const good = stats
+      .filter(x => x.safeEntries > 0)
+      .sort((a,b) => (b.safeEntries - a.safeEntries) || (a.averageScore - b.averageScore));
+
+    $("goodList").innerHTML = good.length ? good.map(x => {
+      const consistency = x.total >= 3 && x.safeEntries === x.total
+        ? "Consistently tolerated"
+        : "Tolerated in some entries";
+
+      return `
+        <div class="food-row">
+          <div>
+            <div class="food-name">${titleCase(x.food)}</div>
+            <span class="badge good">${consistency}</span>
+          </div>
+          <div class="food-stats">
+            Safe entries: ${x.safeEntries}/${x.total}<br>
+            Average symptom score: ${x.averageScore.toFixed(1)}
+          </div>
+        </div>`;
+    }).join("") : '<div class="empty">No well-tolerated foods recorded yet.</div>';
+  }
+
+  function deleteEntry(id) {
+    entries = entries.filter(e => e.id !== id);
+    saveEntries();
+    renderAll();
+  }
+
+  function escapeHtml(text) {
+    return String(text || "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function titleCase(text) {
+    return text.replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function renderAll() {
+    renderHistory();
+    renderFoodLists();
+  }
+
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      $(btn.dataset.tab).classList.add("active");
+      renderAll();
+    });
+  });
+
+  $("entryForm").addEventListener("submit", event => {
+    event.preventDefault();
+
+    const entry = {
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+      date: $("date").value,
+      time: $("time").value,
+      mealType: $("mealType").value,
+      food: $("food").value.trim(),
+      portion: $("portion").value.trim(),
+      painAfter: $("painAfter").checked,
+      painLevel: Number($("painLevel").value || 0),
+      motionAfter: $("motionAfter").checked,
+      motionCount: Number($("motionCount").value || 0),
+      stoolType: $("stoolType").value,
+      notes: $("notes").value.trim()
+    };
+
+    entries.push(entry);
+    saveEntries();
+    event.target.reset();
+    setDefaultDateTime();
+    $("painLevel").value = 0;
+    $("motionCount").value = 0;
+    renderAll();
+    alert("Entry saved successfully.");
+  });
+
+  $("clearBtn").addEventListener("click", () => {
+    if (confirm("Delete all saved entries? This cannot be undone.")) {
+      entries = [];
+      saveEntries();
+      renderAll();
+    }
+  });
+
+  $("exportBtn").addEventListener("click", () => {
+    if (!entries.length) {
+      alert("There are no entries to export.");
+      return;
+    }
+
+    const headers = [
+      "Date","Time","Meal Type","Food","Portion","Pain After Eating",
+      "Pain Level","Motion After Food","Motion Count","Stool Type","Notes"
+    ];
+
+    const rows = entries.map(e => [
+      e.date, e.time, e.mealType, e.food, e.portion,
+      e.painAfter ? "Yes" : "No", e.painLevel,
+      e.motionAfter ? "Yes" : "No", e.motionCount,
+      e.stoolType, e.notes
+    ]);
+
+    const csv = [headers, ...rows]
+      .map(row => row.map(v => `"${String(v ?? "").replaceAll('"','""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "food-symptom-tracker.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  setDefaultDateTime();
+  renderAll();
+</script>
+</body>
+</html>
